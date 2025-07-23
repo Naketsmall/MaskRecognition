@@ -5,6 +5,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from tqdm import tqdm
+
 #TODO: Размножить датасет зашумлением данных
 
 class MaskClassifier(nn.Module):
@@ -36,6 +38,53 @@ class MaskClassifier(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x
+
+
+def train_epoch(model, dataloader, optimizer, criterion, device='cuda'):
+    """
+    Обучение модели на одной эпохе
+
+    Аргументы:
+        model (nn.Module): Модель для обучения (MaskClassifier)
+        dataloader (DataLoader): Загрузчик данных
+        optimizer: Оптимизатор (Adam/SGD)
+        criterion: Функция потерь (CrossEntropyLoss)
+        device (str): Устройство для вычислений ('cuda' или 'cpu')
+
+    Возвращает:
+        float: Среднее значение функции потерь на эпохе
+    """
+    model.train()
+    running_loss = 0.0
+    correct = 0
+    total = 0
+
+    progress_bar = tqdm(enumerate(dataloader), total=len(dataloader), desc="Training")
+
+    for batch_idx, (inputs, labels) in progress_bar:
+        inputs = inputs.to(device)
+        labels = labels.to(device)
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
+
+        running_loss += loss.item()
+        _, predicted = outputs.max(1)
+        total += labels.size(0)
+        correct += predicted.eq(labels).sum().item()
+
+        progress_bar.set_postfix({
+            'loss': running_loss / (batch_idx + 1),
+            'acc': 100. * correct / total
+        })
+
+    epoch_loss = running_loss / len(dataloader)
+    epoch_acc = 100. * correct / total
+
+    print(f"Train Loss: {epoch_loss:.4f} | Train Acc: {epoch_acc:.2f}%")
+    return epoch_loss
 
 
 def classify_mask(face_roi, brightness_threshold=200, saturation_threshold=30):
