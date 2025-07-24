@@ -84,13 +84,3 @@ for epoch in range(num_epochs):
 
     torch.save(model.state_dict(), os.path.join(save_dir, f'epoch_{epoch}.pth'))
 
-
-# 5. Загрузка лучшей модели (пример)
-def load_best_model():
-    checkpoint = torch.load(os.path.join(save_dir, 'best_model.pth'))
-    model = MaskClassifier().to(device)
-    model.load_state_dict(checkpoint['model_state_dict'])
-    return model
-
-
-#best_model = load_best_model()

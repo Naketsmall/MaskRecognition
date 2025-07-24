@@ -37,4 +37,6 @@ MaskRecognition/
 - face roi для классификации: https://www.kaggle.com/datasets/vijaykumar1799/face-mask-detection
 - Думаю попробовать https://www.kaggle.com/datasets/andrewmvd/face-mask-detection 
 
- 
+
+### Пример результата работы программы:
+ ![test_hospital.png](data/output/test_hospital.png)

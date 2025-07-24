@@ -4,8 +4,12 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from PIL import Image
 
 from tqdm import tqdm
+
+from src.dataset_loader import basic_transformer
+
 
 #TODO: Размножить датасет зашумлением данных
 
@@ -38,6 +42,36 @@ class MaskClassifier(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x
+
+    @property
+    def device(self):
+        return next(self.parameters()).device
+
+    def predict_mask(self, image: np.ndarray):
+        """
+        Предсказывает, есть ли маска на изображении
+
+        Аргументы:
+            image (np.ndarray): Изображение в формате RGB
+
+        Возвращает:
+            int: 0:"with_mask", 1:"without_mask" или 2:"mask_incorrect"
+        """
+        self.eval()
+
+        transform = basic_transformer()
+
+        image_tensor = transform(Image.fromarray(image)).unsqueeze(0).to(self.device)
+
+
+        with torch.no_grad():
+            output = self(image_tensor)
+            _, predicted = torch.max(output, 1)
+
+
+        #class_names = ['with_mask', 'without_mask', 'mask_incorrect']
+        #return class_names[predicted.item()]
+        return predicted.item()
 
 
 def train_epoch(model, dataloader, optimizer, criterion, device='cuda'):
@@ -86,6 +120,13 @@ def train_epoch(model, dataloader, optimizer, criterion, device='cuda'):
     print(f"Train Loss: {epoch_loss:.4f} | Train Acc: {epoch_acc:.2f}%")
     return epoch_loss
 
+def load_model(path, device):
+    model = MaskClassifier().to(device)
+    model.load_state_dict(torch.load(path)['model_state_dict'])
+    return model
+
+"""
+# Простой способ через проверку, заполнена ли 1/4 площади белым
 
 def classify_mask(face_roi, brightness_threshold=200, saturation_threshold=30):
     hsv = cv2.cvtColor(face_roi, cv2.COLOR_BGR2HSV)
@@ -102,3 +143,4 @@ def classify_mask(face_roi, brightness_threshold=200, saturation_threshold=30):
     white_pixels = cv2.countNonZero(white_mask)
     total_pixels = face_roi.shape[0] * face_roi.shape[1]
     return (white_pixels / total_pixels) > 0.25
+"""
