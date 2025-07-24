@@ -5,7 +5,8 @@ from torchvision.transforms import transforms
 from tqdm import tqdm
 import os
 
-from src.classification.mask_classifier import MaskClassifier
+from config.constants import TRAIN_DATASET_PATH, VAL_DATASET_PATH, MODELS_PATH
+from src.classification.mask_classifier import MaskClassifier, train_epoch
 from src.dataset_loader import MaskDataset, basic_transformer
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -16,8 +17,8 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-5)
 transform = basic_transformer()
 
 
-train_dataset = MaskDataset('../../data/train', transform=transform)
-val_dataset = MaskDataset('../../data/val', transform=transform)
+train_dataset = MaskDataset('../../' + TRAIN_DATASET_PATH, transform=transform)
+val_dataset = MaskDataset('../../' + VAL_DATASET_PATH, transform=transform)
 
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
@@ -46,25 +47,11 @@ def validate(model, val_loader):
 
 num_epochs = 20
 best_val_acc = 0.0
-save_dir = '../../models'
+save_dir = '../../' + MODELS_PATH
 os.makedirs(save_dir, exist_ok=True)
 
 for epoch in range(num_epochs):
-    model.train()
-    train_loss = 0.0
-    progress_bar = tqdm(train_loader, desc=f'Epoch {epoch + 1}/{num_epochs}')
-
-    for inputs, labels in progress_bar:
-        inputs, labels = inputs.to(device), labels.to(device)
-
-        optimizer.zero_grad()
-        outputs = model(inputs)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
-
-        train_loss += loss.item()
-        progress_bar.set_postfix({'loss': train_loss / (progress_bar.n + 1)})
+    train_epoch(model, train_loader, optimizer, criterion, device)
 
     # Валидация
     val_loss, val_acc = validate(model, val_loader)

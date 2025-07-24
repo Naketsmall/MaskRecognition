@@ -4,12 +4,14 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
+from config.constants import FACE_ROI_SIZE, NORMALIZATION_MEAN, NORMALIZATION_STD, NUM_STATUS
+
 
 def basic_transformer():
     return transforms.Compose([
-        transforms.Resize((128, 128)),
+        transforms.Resize(FACE_ROI_SIZE),
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        transforms.Normalize(mean=NORMALIZATION_MEAN, std=NORMALIZATION_STD)
     ])
 
 
@@ -22,7 +24,7 @@ class MaskDataset(Dataset):
         """
         self.root_dir = root_dir
         self.transform = transform
-        self.classes = ['with_mask', 'without_mask', 'mask_weared_incorrect']
+        self.classes = NUM_STATUS.values()
         self.class_to_idx = {cls_name: i for i, cls_name in enumerate(self.classes)}
 
         self.samples = []

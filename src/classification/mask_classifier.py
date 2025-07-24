@@ -11,8 +11,6 @@ from tqdm import tqdm
 from src.dataset_loader import basic_transformer
 
 
-#TODO: Размножить датасет зашумлением данных
-
 class MaskClassifier(nn.Module):
     def __init__(self, num_classes=3):
         super().__init__()
