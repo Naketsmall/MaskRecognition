@@ -1,8 +1,6 @@
 import cv2
-from ultralytics import YOLO
-
-import matplotlib.pyplot as plt
 import numpy as np
+from ultralytics import YOLO
 
 from src.classification.mask_classifier import classify_mask
 from src.detection.detector import detect_faces
@@ -19,7 +17,7 @@ def process_image(image: np.ndarray):
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
     return image
 
-test_name = 'test_three.jpg'
+test_name = 'test_tolpa.jpg'
 image = cv2.imread(f'./data/input/{test_name}')
 
 process_image(image)

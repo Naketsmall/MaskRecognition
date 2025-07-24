@@ -1,1 +1,6 @@
 ./.venv/
+./models
+./data/Dataset/
+./data/train/
+./data/val/
+./models/epoch*

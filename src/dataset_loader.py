@@ -5,6 +5,14 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
 
+def basic_transformer():
+    return transforms.Compose([
+        transforms.Resize((128, 128)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+
+
 class MaskDataset(Dataset):
     def __init__(self, root_dir, transform=None):
         """
